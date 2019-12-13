@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 import * as API from "../../shared/http";
@@ -10,60 +10,63 @@ import Comments from "../comment/Comments";
 import UserHeader from "../post/UserHeader";
 import Loader from "../Loader";
 
-export class Post extends Component {
-    static propTypes = {
-        post: PropTypes.shape({
-            comments: PropTypes.array,
-            content: PropTypes.string,
-            date: PropTypes.number,
-            id: PropTypes.string.isRequired,
-            image: PropTypes.string,
-            likes: PropTypes.array,
-            location: PropTypes.object,
-            user: PropTypes.object,
-            userId: PropTypes.string
-        })
+export const Post = (props) => {
+    const [post, setPost] = useState(null);
+    const [comments, setComments] = useState([]);
+    const [showComments, setShowComments] = useState(false);
+    const [user, setUser] = useState(props.user);
+
+    const loadPost = async (id) => {
+        const res = await API.fetchPost(id);
+        const post = await res.json();
+        setPost(post);
     };
-    constructor(props) {
-        super(props);
-        this.state = {
-            post: null,
-            comments: [],
-            showComments: false,
-            user: this.props.user
-        };
-        this.loadPost = this.loadPost.bind(this);
+
+    useEffect(() => {
+        loadPost(props.id);
+    }, []);
+
+
+    if (!post) {
+        return <Loader />;
     }
-    componentDidMount() {
-        this.loadPost(this.props.id);
-    }
-    loadPost(id) {
-        API.fetchPost(id)
-            .then(res => res.json())
-            .then(post => {
-                this.setState(() => ({ post }));
-            });
-    }
-    render() {
-        if (!this.state.post) {
-            return <Loader />;
-        }
-        return (
-            <div className="post">
-                <UserHeader date={this.state.post.date} user={this.state.post.user} />
-                <Content post={this.state.post} />
-                <Image post={this.state.post} />
-                <Link link={this.state.post.link} />
-                <PostActionSection showComments={this.state.showComments} />
-                <Comments
-                    comments={this.state.comments}
-                    show={this.state.showComments}
-                    post={this.state.post}
-                    user={this.props.user}
-                />
-            </div>
-        );
-    }
+
+    return (
+        <div className="post">
+            <UserHeader date={post.date} user={post.user} />
+            <Content post={post} />
+            <Image post={post} />
+            <Link link={post.link} />
+            <PostActionSection showComments={showComments} />
+            <Comments
+                comments={comments}
+                show={showComments}
+                post={post}
+                user={props.user}
+            />
+        </div>
+    );
+
 }
+
+Post.propTypes = {
+    user:  PropTypes.shape({
+        id: PropTypes.string,
+        name: PropTypes.string,
+        profilePicture: PropTypes.APIstring,
+    }),
+
+    post: PropTypes.shape({
+        comments: PropTypes.array,
+        content: PropTypes.string,
+        date: PropTypes.number,
+        id: PropTypes.string.isRequired,
+        image: PropTypes.string,
+        likes: PropTypes.array,
+        location: PropTypes.object,
+        user: PropTypes.object,
+        userId: PropTypes.string
+    })
+};
 
 export default Post;
