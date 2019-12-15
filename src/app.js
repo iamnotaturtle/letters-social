@@ -8,6 +8,7 @@ import Nav from './components/nav/navbar';
 import Loader from './components/Loader';
 
 import * as API from './shared/http';
+import CreatePost from './components/post/Create';
 import Ad from './components/ad/Ad';
 import Post from './components/post/Post';
 import Welcome from './components/welcome/Welcome';
@@ -24,6 +25,10 @@ const App = (props) => {
     const [posts, setPosts] = useState([]);
     const [endpoint, setEndpoint] = useState(`${process.env
         .ENDPOINT}/posts?_page=1&_sort=date&_order=DESC&_embed=comments&_expand=user&_embed=likes`);
+
+    const createNewPost = (post) => {
+        setPosts(orderBy(posts.concat(post), 'date', 'desc'));
+    };
 
     const getPosts = async () => {
         try {
@@ -56,6 +61,7 @@ const App = (props) => {
                 <div className="home">
                     <Welcome key="welcome" />
                     <div>
+                        <CreatePost onSubmit={createNewPost}/>
                         {
                             posts.length > 0 
                             &&
