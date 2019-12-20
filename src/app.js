@@ -26,8 +26,14 @@ const App = (props) => {
     const [endpoint, setEndpoint] = useState(`${process.env
         .ENDPOINT}/posts?_page=1&_sort=date&_order=DESC&_embed=comments&_expand=user&_embed=likes`);
 
-    const createNewPost = (post) => {
-        setPosts(orderBy(posts.concat(post), 'date', 'desc'));
+    const createNewPost = async (post) => {
+        try {
+            const res = await API.createPost(post);
+            const newPost = await res.json();
+            setPosts(orderBy(posts.concat(newPost), 'date', 'desc'));
+        } catch (error) {
+            setError(error);
+        }
     };
 
     const getPosts = async () => {
